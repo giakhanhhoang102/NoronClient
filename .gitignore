@@ -2,3 +2,12 @@ __pycache__/
 .venv/
 *.pyc
 logs/
+**/.pytest_cache/
+**/.mypy_cache/
+**/.ruff_cache/
+**/.cache/
+node_modules/
+dist/
+build/
+*.log
+*.DS_Store
