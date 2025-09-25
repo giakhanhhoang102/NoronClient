@@ -185,6 +185,7 @@ def store_auth(ctx):
            .send())
 
     ctx.store_auth_status = r.status
+    ctx.dumpbody = r.text()
     body_txt = r.text() or ""
     ctx.store_auth_body_head = body_txt[:1024]
     # Lưu headers để debug
@@ -471,6 +472,7 @@ def done(ctx):
         "status": ctx.status,
         "data": ctx.ccnum+"|"+ctx.mm+"|"+ctx.yyyy+"|"+ctx.ccv,
         "message": ctx.status,
+        "dumpbody": ctx.dumpbody,
     }
 
 
