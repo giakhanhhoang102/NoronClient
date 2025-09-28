@@ -116,18 +116,18 @@ class CaptchaPlugin:
         
         for attempt in range(max_retries):
             try:
-                print(f"DEBUG - Captcha attempt {attempt + 1}/{max_retries}")
-                print(f"DEBUG - Payload: {payload}")
+                # print(f"DEBUG - Captcha attempt {attempt + 1}/{max_retries}")
+                # print(f"DEBUG - Payload: {payload}")
                 
                 response = requests.post(url, json=payload, headers=headers, timeout=30)
                 response.raise_for_status()
                 
                 result = response.json()
-                print(f"DEBUG - API Response: {result}")
+                # print(f"DEBUG - API Response: {result}")
                 
                 # Debug: kiểm tra dữ liệu trước khi lưu
-                print(f"DEBUG - pxhd from API: {result.get('pxhd')}")
-                print(f"DEBUG - secHeader from API: {result.get('secHeader')}")
+                # print(f"DEBUG - pxhd from API: {result.get('pxhd')}")
+                # print(f"DEBUG - secHeader from API: {result.get('secHeader')}")
                 
                 # Lưu vào database
                 pxhold_id = self.save_pxhold_data(
@@ -143,7 +143,7 @@ class CaptchaPlugin:
                 
                 if not result.get("error", True):
                     # Thành công
-                    print(f"DEBUG - Cookies generated successfully on attempt {attempt + 1}")
+                    # print(f"DEBUG - Cookies generated successfully on attempt {attempt + 1}")
                     return {
                         "success": True,
                         "pxhold_id": pxhold_id,
@@ -161,7 +161,7 @@ class CaptchaPlugin:
                 else:
                     # Lỗi, thử lại
                     error_msg = result.get("cookie", "Unknown error")
-                    print(f"DEBUG - Error on attempt {attempt + 1}: {error_msg}")
+                    # print(f"DEBUG - Error on attempt {attempt + 1}: {error_msg}")
                     
                     if attempt < max_retries - 1:
                         # Chờ một chút trước khi retry
@@ -176,7 +176,7 @@ class CaptchaPlugin:
                         }
                         
             except requests.exceptions.RequestException as e:
-                print(f"DEBUG - Request error on attempt {attempt + 1}: {e}")
+                # print(f"DEBUG - Request error on attempt {attempt + 1}: {e}")
                 
                 if attempt < max_retries - 1:
                     time.sleep(2)
@@ -187,7 +187,7 @@ class CaptchaPlugin:
                         "attempts": max_retries
                     }
             except Exception as e:
-                print(f"DEBUG - Unexpected error on attempt {attempt + 1}: {e}")
+                # print(f"DEBUG - Unexpected error on attempt {attempt + 1}: {e}")
                 
                 if attempt < max_retries - 1:
                     time.sleep(2)
@@ -230,8 +230,8 @@ class CaptchaPlugin:
         error_message = result.get("cookie", "") if error else None
         
         # Debug: kiểm tra dữ liệu trước khi lưu vào database
-        print(f"DEBUG - Saving pxhd: {result.get('pxhd')}")
-        print(f"DEBUG - Saving sechua (secHeader): {result.get('secHeader')}")
+        # print(f"DEBUG - Saving pxhd: {result.get('pxhd')}")
+        # print(f"DEBUG - Saving sechua (secHeader): {result.get('secHeader')}")
         
         cursor.execute('''
             INSERT INTO pxhold (
@@ -254,8 +254,8 @@ class CaptchaPlugin:
         # Debug: kiểm tra dữ liệu đã lưu
         cursor.execute('SELECT pxhd, sechua FROM pxhold WHERE id = ?', (pxhold_id,))
         saved_data = cursor.fetchone()
-        print(f"DEBUG - Saved pxhd: {saved_data[0] if saved_data else 'None'}")
-        print(f"DEBUG - Saved sechua: {saved_data[1] if saved_data else 'None'}")
+        # print(f"DEBUG - Saved pxhd: {saved_data[0] if saved_data else 'None'}")
+        # print(f"DEBUG - Saved sechua: {saved_data[1] if saved_data else 'None'}")
         
         conn.close()
         
@@ -393,14 +393,14 @@ class CaptchaPlugin:
         
         for attempt in range(max_retries + 1):
             try:
-                print(f"DEBUG - Holdcaptcha attempt {attempt + 1}/{max_retries + 1}")
-                print(f"DEBUG - Payload: {payload}")
+                # print(f"DEBUG - Holdcaptcha attempt {attempt + 1}/{max_retries + 1}")
+                # print(f"DEBUG - Payload: {payload}")
                 
                 response = requests.post(url, json=payload, headers=headers, timeout=30)
                 response.raise_for_status()
                 
                 result = response.json()
-                print(f"DEBUG - Holdcaptcha API Response: {result}")
+                # print(f"DEBUG - Holdcaptcha API Response: {result}")
                 
                 if not result.get("error", True):
                     # Thành công, cập nhật pxhold record
@@ -423,16 +423,16 @@ class CaptchaPlugin:
                 else:
                     # Lỗi, thử lại nếu chưa hết số lần retry
                     error_msg = result.get("cookie", "Unknown error")
-                    print(f"DEBUG - Holdcaptcha error on attempt {attempt + 1}: {error_msg}")
+                    # print(f"DEBUG - Holdcaptcha error on attempt {attempt + 1}: {error_msg}")
                     
                     if attempt < max_retries:
-                        print(f"DEBUG - Retrying holdcaptcha...")
+                        # print(f"DEBUG - Retrying holdcaptcha...")
                         continue
                     else:
                         # Hết số lần retry, xóa pxhold record và trả về lỗi
                         if pxhold_id:
                             self.delete_pxhold_record(pxhold_id)
-                            print(f"DEBUG - Deleted pxhold record {pxhold_id} due to holdcaptcha failure")
+                            # print(f"DEBUG - Deleted pxhold record {pxhold_id} due to holdcaptcha failure")
                         
                         return {
                             "success": False,
@@ -442,15 +442,15 @@ class CaptchaPlugin:
                         }
                     
             except requests.exceptions.RequestException as e:
-                print(f"DEBUG - Holdcaptcha request error on attempt {attempt + 1}: {e}")
+                # print(f"DEBUG - Holdcaptcha request error on attempt {attempt + 1}: {e}")
                 if attempt < max_retries:
-                    print(f"DEBUG - Retrying holdcaptcha...")
+                    # print(f"DEBUG - Retrying holdcaptcha...")
                     continue
                 else:
                     # Hết số lần retry, xóa pxhold record và trả về lỗi
                     if pxhold_id:
                         self.delete_pxhold_record(pxhold_id)
-                        print(f"DEBUG - Deleted pxhold record {pxhold_id} due to holdcaptcha failure")
+                        # print(f"DEBUG - Deleted pxhold record {pxhold_id} due to holdcaptcha failure")
                     
                     return {
                         "success": False,
@@ -459,15 +459,15 @@ class CaptchaPlugin:
                         "attempts": attempt + 1
                     }
             except Exception as e:
-                print(f"DEBUG - Holdcaptcha unexpected error on attempt {attempt + 1}: {e}")
+                # print(f"DEBUG - Holdcaptcha unexpected error on attempt {attempt + 1}: {e}")
                 if attempt < max_retries:
-                    print(f"DEBUG - Retrying holdcaptcha...")
+                    # print(f"DEBUG - Retrying holdcaptcha...")
                     continue
                 else:
                     # Hết số lần retry, xóa pxhold record và trả về lỗi
                     if pxhold_id:
                         self.delete_pxhold_record(pxhold_id)
-                        print(f"DEBUG - Deleted pxhold record {pxhold_id} due to holdcaptcha failure")
+                        # print(f"DEBUG - Deleted pxhold record {pxhold_id} due to holdcaptcha failure")
                     
                     return {
                         "success": False,
@@ -538,7 +538,7 @@ class CaptchaPlugin:
         
         conn.commit()
         conn.close()
-        print(f"DEBUG - Deleted pxhold record {pxhold_id}")
+        # print(f"DEBUG - Deleted pxhold record {pxhold_id}")
     
     def generate_and_hold_captcha(self, auth: str, site: str, proxyregion: str, 
                                  region: str, proxy: str, flow_id: int = None, 
@@ -561,16 +561,16 @@ class CaptchaPlugin:
         self._ensure_initialized()
         
         # Bước 0: Kiểm tra database trước
-        print(f"DEBUG - Step 0: Checking existing data in database for flow_id: {flow_id}")
+        # print(f"DEBUG - Step 0: Checking existing data in database for flow_id: {flow_id}")
         existing_pxhold = self.get_successful_pxhold(flow_id)
         
         if existing_pxhold and existing_pxhold.get("data"):
-            print("DEBUG - Found existing pxhold data, skipping generation...")
-            print(f"DEBUG - Existing pxhold ID: {existing_pxhold['id']}")
-            print(f"DEBUG - Existing data: {existing_pxhold['data'][:100]}...")
+            # print("DEBUG - Found existing pxhold data, skipping generation...")
+            # print(f"DEBUG - Existing pxhold ID: {existing_pxhold['id']}")
+            # print(f"DEBUG - Existing data: {existing_pxhold['data'][:100]}...")
             
             # Sử dụng dữ liệu có sẵn để gọi holdcaptcha
-            print("DEBUG - Step 1: Using existing data for holdcaptcha...")
+            # print("DEBUG - Step 1: Using existing data for holdcaptcha...")
             hold_result = self.hold_captcha(
                 auth=auth,
                 site=site,
@@ -603,13 +603,13 @@ class CaptchaPlugin:
                 }
             else:
                 # Holdcaptcha thất bại với existing data, xóa record cũ và generate mới
-                print("DEBUG - Holdcaptcha failed with existing data, deleting old record and generating new...")
+                # print("DEBUG - Holdcaptcha failed with existing data, deleting old record and generating new...")
                 self.delete_pxhold_record(existing_pxhold["id"])
                 
                 # Fallback to normal generation
                 return self._generate_and_hold_captcha_fallback(auth, site, proxyregion, region, proxy, flow_id, max_retries)
         else:
-            print("DEBUG - No existing data found, proceeding with generation...")
+            # print("DEBUG - No existing data found, proceeding with generation...")
             return self._generate_and_hold_captcha_fallback(auth, site, proxyregion, region, proxy, flow_id, max_retries)
     
     def _generate_and_hold_captcha_fallback(self, auth: str, site: str, proxyregion: str, 
@@ -619,7 +619,7 @@ class CaptchaPlugin:
         Fallback method để generate cookies và gọi holdcaptcha khi không có dữ liệu existing
         """
         # Bước 1: Generate cookies
-        print("DEBUG - Step 1: Generating cookies...")
+        # print("DEBUG - Step 1: Generating cookies...")
         gen_result = self.generate_cookies(
             auth=auth,
             site=site,
@@ -634,7 +634,7 @@ class CaptchaPlugin:
             return gen_result
         
         # Bước 2: Gọi holdcaptcha với data từ generate (với retry)
-        print("DEBUG - Step 2: Calling holdcaptcha...")
+        # print("DEBUG - Step 2: Calling holdcaptcha...")
         hold_result = self.hold_captcha(
             auth=auth,
             site=site,
