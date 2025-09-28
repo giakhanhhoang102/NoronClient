@@ -388,6 +388,61 @@ def get_database_cookies(ctx):
         ctx.cookie_pxvid = ""
         ctx.cookie_pxcts = ""
 
+@step("add_px_cookies_to_via_tls")
+def add_px_cookies_to_via_tls(ctx):
+    """Thêm các px cookies vào cookie_all_via_tls"""
+    try:
+        # Lấy cookie_all_via_tls hiện tại
+        current_cookies = ctx.get("cookie_all_via_tls", "")
+        
+        # Tạo danh sách px cookies
+        px_cookies = []
+        
+        # Thêm pxcts
+        if ctx.get("cookie_pxcts"):
+            px_cookies.append(f"pxcts={ctx.cookie_pxcts}")
+        
+        # Thêm _pxvid
+        if ctx.get("cookie_pxvid"):
+            px_cookies.append(f"_pxvid={ctx.cookie_pxvid}")
+        
+        # Thêm _pxhd
+        if ctx.get("cookie_pxhd"):
+            px_cookies.append(f"_pxhd={ctx.cookie_pxhd}")
+        
+        # Thêm _px3 (loại bỏ _px3= prefix nếu có)
+        if ctx.get("cookie_px3"):
+            px3_value = ctx.cookie_px3
+            # Loại bỏ _px3= prefix nếu có
+            if px3_value.startswith("_px3="):
+                px3_value = px3_value[5:]  # Bỏ qua 5 ký tự đầu "_px3="
+            px_cookies.append(f"_px3={px3_value}")
+        
+        # Kết hợp cookies hiện tại với px cookies
+        all_cookies = []
+        
+        # Thêm cookies hiện tại nếu có
+        if current_cookies:
+            all_cookies.append(current_cookies)
+        
+        # Thêm px cookies
+        if px_cookies:
+            all_cookies.extend(px_cookies)
+        
+        # Cập nhật cookie_all_via_tls
+        ctx.cookie_all_via_tls = "; ".join(all_cookies)
+        
+        print(f"DEBUG - Added {len(px_cookies)} px cookies to via_tls:")
+        for cookie in px_cookies:
+            print(f"DEBUG - {cookie[:50]}..." if len(cookie) > 50 else f"DEBUG - {cookie}")
+        
+        print(f"DEBUG - Total cookies in via_tls: {len(ctx.cookie_all_via_tls.split('; '))}")
+        
+    except Exception as e:
+        print(f"DEBUG - Error adding px cookies to via_tls: {e}")
+        import traceback
+        traceback.print_exc()
+
 @finalize
 def done(ctx):
     """Kết thúc flow và trả về kết quả"""
