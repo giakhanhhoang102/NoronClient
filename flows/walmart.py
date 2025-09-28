@@ -283,6 +283,100 @@ def process_cookies_for_tls(ctx):
         ctx.status = "BAN"
         raise AssertionError(f"BAN: Failed to process cookies: {e}")
 
+@step("get_database_cookies")
+def get_database_cookies(ctx):
+    """Lấy dữ liệu cookies từ database để sử dụng cho các step tiếp theo"""
+    try:
+        # Lấy SQLite plugin instance
+        from flowlite.plugins.sqlite import get_sqlite_plugin
+        sqlite_plugin = get_sqlite_plugin()
+        
+        # Lấy flow_id từ context
+        flow_id = getattr(ctx, 'uuid', None)
+        print(f"DEBUG - Flow ID: {flow_id}")
+        
+        # Query để lấy dữ liệu pxhold mới nhất (từ bất kỳ flow nào)
+        conn = sqlite_plugin._get_connection()
+        cursor = conn.cursor()
+        
+        # Thử lấy từ flow hiện tại trước
+        if flow_id:
+            cursor.execute('''
+                SELECT cookie, pxhd, UserAgent, sechua, vid, cts 
+                FROM pxhold 
+                WHERE flow_id = ? AND error = 0 
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            ''', (flow_id,))
+            result = cursor.fetchone()
+            
+            if result:
+                print(f"DEBUG - Found data for flow_id: {flow_id}")
+            else:
+                print(f"DEBUG - No data for flow_id: {flow_id}, trying any recent data...")
+                # Nếu không có data cho flow này, lấy data gần đây nhất
+                cursor.execute('''
+                    SELECT cookie, pxhd, UserAgent, sechua, vid, cts 
+                    FROM pxhold 
+                    WHERE error = 0 
+                    ORDER BY updated_at DESC 
+                    LIMIT 1
+                ''')
+                result = cursor.fetchone()
+        else:
+            print("DEBUG - No flow_id, getting most recent data...")
+            # Lấy data gần đây nhất
+            cursor.execute('''
+                SELECT cookie, pxhd, UserAgent, sechua, vid, cts 
+                FROM pxhold 
+                WHERE error = 0 
+                ORDER BY updated_at DESC 
+                LIMIT 1
+            ''')
+            result = cursor.fetchone()
+        
+        conn.close()
+        
+        if result:
+            cookie, pxhd, user_agent, sechua, vid, cts = result
+            
+            # Lưu vào context
+            ctx.cookie_px3 = cookie or ""
+            ctx.cookie_pxhd = pxhd or ""
+            ctx.px_ua = user_agent or ""
+            ctx.px_sechua = sechua or ""
+            ctx.cookie_pxvid = vid or ""
+            ctx.cookie_pxcts = cts or ""
+            
+            print(f"DEBUG - Retrieved from database:")
+            print(f"DEBUG - cookie_px3: {ctx.cookie_px3[:100]}..." if ctx.cookie_px3 else "DEBUG - cookie_px3: None")
+            print(f"DEBUG - cookie_pxhd: {ctx.cookie_pxhd[:50]}..." if ctx.cookie_pxhd else "DEBUG - cookie_pxhd: None")
+            print(f"DEBUG - px_ua: {ctx.px_ua[:50]}..." if ctx.px_ua else "DEBUG - px_ua: None")
+            print(f"DEBUG - px_sechua: {ctx.px_sechua[:50]}..." if ctx.px_sechua else "DEBUG - px_sechua: None")
+            print(f"DEBUG - cookie_pxvid: {ctx.cookie_pxvid[:50]}..." if ctx.cookie_pxvid else "DEBUG - cookie_pxvid: None")
+            print(f"DEBUG - cookie_pxcts: {ctx.cookie_pxcts[:50]}..." if ctx.cookie_pxcts else "DEBUG - cookie_pxcts: None")
+        else:
+            print("DEBUG - No pxhold data found in database at all")
+            # Khởi tạo với giá trị rỗng
+            ctx.cookie_px3 = ""
+            ctx.cookie_pxhd = ""
+            ctx.px_ua = ""
+            ctx.px_sechua = ""
+            ctx.cookie_pxvid = ""
+            ctx.cookie_pxcts = ""
+            
+    except Exception as e:
+        print(f"DEBUG - Error retrieving database cookies: {e}")
+        import traceback
+        traceback.print_exc()
+        # Khởi tạo với giá trị rỗng nếu có lỗi
+        ctx.cookie_px3 = ""
+        ctx.cookie_pxhd = ""
+        ctx.px_ua = ""
+        ctx.px_sechua = ""
+        ctx.cookie_pxvid = ""
+        ctx.cookie_pxcts = ""
+
 @finalize
 def done(ctx):
     """Kết thúc flow và trả về kết quả"""
@@ -300,13 +394,18 @@ def done(ctx):
         "protected_q": ctx.get("protected_q"),
         "protected_mac": ctx.get("protected_mac"),
         "legacy_mode": ctx.get("legacy_mode"),
-        "cookie_all_via_tls": ctx.get("cookie_all_via_tls"),
+        #"cookie_all_via_tls": ctx.get("cookie_all_via_tls"),
         "Ua": ctx.get("Ua"),
         "sechua": ctx.get("sechua"),
         "pxhd": ctx.get("pxhd"),
-        "paradata": ctx.get("paradata"),
         "session_proxy": ctx.get("session_proxy"),
-        "holdcaptcha_response": ctx.get("holdcaptcha_response"),
+        #"holdcaptcha_response": ctx.get("holdcaptcha_response"),
+        "cookie_px3": ctx.get("cookie_px3"),
+        "cookie_pxhd": ctx.get("cookie_pxhd"),
+        "px_ua": ctx.get("px_ua"),
+        "px_sechua": ctx.get("px_sechua"),
+        "cookie_pxvid": ctx.get("cookie_pxvid"),
+        "cookie_pxcts": ctx.get("cookie_pxcts"),
         "captcha_plugin_used": True,  # Đánh dấu đã sử dụng Captcha plugin
     }
 
