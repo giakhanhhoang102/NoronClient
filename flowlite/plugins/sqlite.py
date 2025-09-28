@@ -12,7 +12,7 @@ from typing import Any, Dict, List, Optional, Union
 
 
 class SQLitePlugin:
-    def __init__(self, db_path: str = "flowlite_data.db"):
+    def __init__(self, db_path: str = "flowlite/plugins/database/flowlite_data.db"):
         """
         Khởi tạo SQLite plugin
         
