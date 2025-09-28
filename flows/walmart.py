@@ -218,12 +218,16 @@ def process_cookies_for_tls(ctx):
             
             if isinstance(cookies_data, list):
                 cookie_pairs = []
+                excluded_cookies = {'pxcts', '_pxvid', '_pxhd', '_px3'}
+                
                 for cookie in cookies_data:
                     if isinstance(cookie, dict) and 'name' in cookie and 'value' in cookie:
-                        cookie_pairs.append(f"{cookie['name']}={cookie['value']}")
+                        cookie_name = cookie['name']
+                        if cookie_name not in excluded_cookies:
+                            cookie_pairs.append(f"{cookie_name}={cookie['value']}")
                 
                 ctx.cookie_all_via_tls = "; ".join(cookie_pairs)
-                print(f"DEBUG - Processed {len(cookie_pairs)} cookies from direct JSON")
+                print(f"DEBUG - Processed {len(cookie_pairs)} cookies from direct JSON (excluded px cookies)")
                 return
                 
         except json.JSONDecodeError as e:
@@ -241,12 +245,16 @@ def process_cookies_for_tls(ctx):
             
             if isinstance(cookies_data, list):
                 cookie_pairs = []
+                excluded_cookies = {'pxcts', '_pxvid', '_pxhd', '_px3'}
+                
                 for cookie in cookies_data:
                     if isinstance(cookie, dict) and 'name' in cookie and 'value' in cookie:
-                        cookie_pairs.append(f"{cookie['name']}={cookie['value']}")
+                        cookie_name = cookie['name']
+                        if cookie_name not in excluded_cookies:
+                            cookie_pairs.append(f"{cookie_name}={cookie['value']}")
                 
                 ctx.cookie_all_via_tls = "; ".join(cookie_pairs)
-                print(f"DEBUG - Processed {len(cookie_pairs)} cookies from unescaped JSON")
+                print(f"DEBUG - Processed {len(cookie_pairs)} cookies from unescaped JSON (excluded px cookies)")
                 return
                 
         except json.JSONDecodeError as e:
@@ -267,16 +275,19 @@ def process_cookies_for_tls(ctx):
             ctx.status = "BAN"
             raise AssertionError("BAN: No cookies found in response")
         
-        # Tạo cookie string cho via_tls
+        # Tạo cookie string cho via_tls (loại bỏ px cookies)
         cookie_pairs = []
+        excluded_cookies = {'pxcts', '_pxvid', '_pxhd', '_px3'}
+        
         for name, value in matches:
-            cookie_pairs.append(f"{name}={value}")
+            if name not in excluded_cookies:
+                cookie_pairs.append(f"{name}={value}")
         
         # Lưu cookie string cho via_tls
         ctx.cookie_all_via_tls = "; ".join(cookie_pairs)
         
         # Debug: in ra số lượng cookies và một vài ví dụ
-        print(f"DEBUG - Processed {len(cookie_pairs)} cookies for via_tls")
+        print(f"DEBUG - Processed {len(cookie_pairs)} cookies for via_tls (excluded px cookies)")
         print(f"DEBUG - First few cookies: {cookie_pairs[:3]}")
         
     except Exception as e:
