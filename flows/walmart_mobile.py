@@ -5,6 +5,8 @@ from flowlite.plugins.parse_between_strings import _parse_between
 from flowlite.plugins.sqlite import get_sqlite_plugin
 import json
 import re
+import random
+import string
 
 # Tạo instance Flow
 flow = Flow("walmart_mobile")
@@ -17,6 +19,152 @@ def init_input(ctx):
     ctx.MM = ctx.data.get("MM")
     ctx.YYYY = ctx.data.get("YYYY")
     ctx.CCV = ctx.data.get("CCV")
+
+@step("init_random_data")
+def init_random_data(ctx):
+    """Khởi tạo dữ liệu random cho thông tin cá nhân"""
+    
+    # Danh sách tên phổ biến ở Mỹ
+    first_names = [
+        "James", "John", "Robert", "Michael", "William", "David", "Richard", "Charles", "Joseph", "Thomas",
+        "Christopher", "Daniel", "Paul", "Mark", "Donald", "George", "Kenneth", "Steven", "Edward", "Brian",
+        "Ronald", "Anthony", "Kevin", "Jason", "Matthew", "Gary", "Timothy", "Jose", "Larry", "Jeffrey",
+        "Frank", "Scott", "Eric", "Stephen", "Andrew", "Raymond", "Gregory", "Joshua", "Jerry", "Dennis",
+        "Walter", "Patrick", "Peter", "Harold", "Douglas", "Henry", "Carl", "Arthur", "Ryan", "Roger",
+        "Mary", "Patricia", "Jennifer", "Linda", "Elizabeth", "Barbara", "Susan", "Jessica", "Sarah", "Karen",
+        "Nancy", "Lisa", "Betty", "Helen", "Sandra", "Donna", "Carol", "Ruth", "Sharon", "Michelle",
+        "Laura", "Sarah", "Kimberly", "Deborah", "Dorothy", "Lisa", "Nancy", "Karen", "Betty", "Helen",
+        "Sandra", "Donna", "Carol", "Ruth", "Sharon", "Michelle", "Laura", "Sarah", "Kimberly", "Deborah"
+    ]
+    
+    last_names = [
+        "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez",
+        "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson", "Thomas", "Taylor", "Moore", "Jackson", "Martin",
+        "Lee", "Perez", "Thompson", "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson",
+        "Walker", "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill", "Flores",
+        "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell", "Mitchell", "Carter", "Roberts",
+        "Gomez", "Phillips", "Evans", "Turner", "Diaz", "Parker", "Cruz", "Edwards", "Collins", "Reyes",
+        "Stewart", "Morris", "Morales", "Murphy", "Cook", "Rogers", "Gutierrez", "Ortiz", "Morgan", "Cooper"
+    ]
+    
+    # Danh sách thành phố và bang phổ biến ở Mỹ
+    cities_states = [
+        ("Los Angeles", "CA", "90001"), ("New York", "NY", "10001"), ("Chicago", "IL", "60601"),
+        ("Houston", "TX", "77001"), ("Phoenix", "AZ", "85001"), ("Philadelphia", "PA", "19101"),
+        ("San Antonio", "TX", "78201"), ("San Diego", "CA", "92101"), ("Dallas", "TX", "75201"),
+        ("San Jose", "CA", "95101"), ("Austin", "TX", "73301"), ("Jacksonville", "FL", "32201"),
+        ("Fort Worth", "TX", "76101"), ("Columbus", "OH", "43201"), ("Charlotte", "NC", "28201"),
+        ("San Francisco", "CA", "94101"), ("Indianapolis", "IN", "46201"), ("Seattle", "WA", "98101"),
+        ("Denver", "CO", "80201"), ("Washington", "DC", "20001"), ("Boston", "MA", "02101"),
+        ("El Paso", "TX", "79901"), ("Nashville", "TN", "37201"), ("Detroit", "MI", "48201"),
+        ("Oklahoma City", "OK", "73101"), ("Portland", "OR", "97201"), ("Las Vegas", "NV", "89101"),
+        ("Memphis", "TN", "38101"), ("Louisville", "KY", "40201"), ("Baltimore", "MD", "21201"),
+        ("Milwaukee", "WI", "53201"), ("Albuquerque", "NM", "87101"), ("Tucson", "AZ", "85701"),
+        ("Fresno", "CA", "93701"), ("Sacramento", "CA", "95801"), ("Mesa", "AZ", "85201"),
+        ("Kansas City", "MO", "64101"), ("Atlanta", "GA", "30301"), ("Long Beach", "CA", "90801"),
+        ("Colorado Springs", "CO", "80901"), ("Raleigh", "NC", "27601"), ("Miami", "FL", "33101"),
+        ("Virginia Beach", "VA", "23451"), ("Omaha", "NE", "68101"), ("Oakland", "CA", "94601"),
+        ("Minneapolis", "MN", "55401"), ("Tulsa", "OK", "74101"), ("Arlington", "TX", "76001"),
+        ("Tampa", "FL", "33601"), ("New Orleans", "LA", "70112")
+    ]
+    
+    # Random chọn tên
+    ctx.first_name = random.choice(first_names)
+    ctx.last_name = random.choice(last_names)
+    ctx.name_on_card = f"{ctx.first_name} {ctx.last_name}"
+    
+    # Random chọn thành phố và bang
+    city, state, zip_code = random.choice(cities_states)
+    ctx.city = city
+    ctx.state = state
+    ctx.postal_code = zip_code
+    
+    # Random địa chỉ
+    street_numbers = [str(random.randint(100, 9999)) for _ in range(1)]
+    street_names = [
+        "Main St", "Oak Ave", "Pine St", "Maple Dr", "Cedar Ln", "Elm St", "Park Ave", "First St",
+        "Second St", "Third St", "Washington St", "Lincoln Ave", "Jefferson St", "Madison Ave",
+        "Franklin St", "Jackson Ave", "Adams St", "Monroe St", "Roosevelt Ave", "Kennedy Dr",
+        "Johnson St", "Wilson Ave", "Brown St", "Davis Ave", "Miller St", "Garcia Ave", "Martinez St",
+        "Anderson Ave", "Taylor St", "Thomas Ave", "Hernandez St", "Moore Ave", "Martin St", "Jackson Ave",
+        "Thompson St", "White Ave", "Harris St", "Sanchez Ave", "Clark St", "Ramirez Ave", "Lewis St",
+        "Robinson Ave", "Walker St", "Young Ave", "Allen St", "King Ave", "Wright St", "Scott Ave"
+    ]
+    
+    ctx.address_line_one = f"{random.choice(street_numbers)} {random.choice(street_names)}"
+    ctx.address_line_two = ""
+    ctx.address_line_three = ""
+    ctx.country = "US"
+    ctx.country_calling_code = None
+    ctx.municipality = ""
+    ctx.colony = ""
+    
+    # Random số điện thoại (10 chữ số, bắt đầu bằng area code hợp lệ)
+    area_codes = ["213", "310", "323", "424", "562", "626", "661", "714", "747", "818", "909", "949", "951",
+                  "212", "315", "347", "516", "518", "585", "607", "631", "646", "680", "716", "718", "845", "914", "917", "929", "934",
+                  "312", "331", "630", "708", "773", "815", "847", "872", "224", "309", "618", "779", "217", "618", "309", "779", "224", "872", "847", "815", "773", "708", "630", "331", "312",
+                  "713", "281", "832", "346", "409", "430", "432", "469", "512", "737", "806", "817", "830", "903", "915", "936", "940", "956", "972", "979"]
+    
+    area_code = random.choice(area_codes)
+    phone_suffix = ''.join([str(random.randint(0, 9)) for _ in range(7)])
+    ctx.phone = f"{area_code}{phone_suffix}"
+    
+    # Random address ID (có thể null)
+    ctx.address_id = None
+    
+    # Random iOS headers
+    ios_versions = ["15.8.4", "15.8.3", "15.8.2", "15.8.1", "15.8.0", "15.7.9", "15.7.8", "15.7.7", "15.7.6", "15.7.5"]
+    app_versions = ["25.12.2", "25.12.1", "25.12.0", "25.11.9", "25.11.8"]
+    
+    # Random iPhone models với device identifiers tương ứng
+    iphone_models = [
+        ("iPhone 6s Plus", "iPhone8,2"),  # iPhone 6s Plus
+        ("iPhone 6s", "iPhone8,1"),       # iPhone 6s
+        ("iPhone 7 Plus", "iPhone9,2"),   # iPhone 7 Plus
+        ("iPhone 7", "iPhone9,1"),        # iPhone 7
+        ("iPhone 8 Plus", "iPhone10,2"),  # iPhone 8 Plus
+        ("iPhone 8", "iPhone10,1"),       # iPhone 8
+        ("iPhone X", "iPhone10,3"),       # iPhone X
+        ("iPhone XS", "iPhone11,2"),      # iPhone XS
+        ("iPhone XS Max", "iPhone11,4"),  # iPhone XS Max
+        ("iPhone XR", "iPhone11,8"),      # iPhone XR
+        ("iPhone 11", "iPhone12,1"),      # iPhone 11
+        ("iPhone 11 Pro", "iPhone12,3"),  # iPhone 11 Pro
+        ("iPhone 11 Pro Max", "iPhone12,5"), # iPhone 11 Pro Max
+        ("iPhone 12 mini", "iPhone13,1"), # iPhone 12 mini
+        ("iPhone 12", "iPhone13,2"),      # iPhone 12
+        ("iPhone 12 Pro", "iPhone13,3"),  # iPhone 12 Pro
+        ("iPhone 12 Pro Max", "iPhone13,4"), # iPhone 12 Pro Max
+        ("iPhone 13 mini", "iPhone14,4"), # iPhone 13 mini
+        ("iPhone 13", "iPhone14,5"),      # iPhone 13
+        ("iPhone 13 Pro", "iPhone14,2"),  # iPhone 13 Pro
+        ("iPhone 13 Pro Max", "iPhone14,3"), # iPhone 13 Pro Max
+    ]
+    
+    # Random chọn iOS version và app version
+    ctx.ios_version = random.choice(ios_versions)
+    ctx.app_version = random.choice(app_versions)
+    
+    # Random chọn iPhone model
+    device_model, device_id = random.choice(iphone_models)
+    ctx.device_model = device_model
+    ctx.device_id = device_id
+    
+    # Tạo User-Agent
+    ctx.user_agent = f"WMT1H/{ctx.app_version} iOS/{ctx.ios_version}"
+    
+    print(f"DEBUG - Random data generated:")
+    print(f"  First Name: {ctx.first_name}")
+    print(f"  Last Name: {ctx.last_name}")
+    print(f"  Name on Card: {ctx.name_on_card}")
+    print(f"  Phone: {ctx.phone}")
+    print(f"  Address: {ctx.address_line_one}")
+    print(f"  City: {ctx.city}, State: {ctx.state}, ZIP: {ctx.postal_code}")
+    print(f"  iOS Version: {ctx.ios_version}")
+    print(f"  App Version: {ctx.app_version}")
+    print(f"  Device Model: {ctx.device_model}")
+    print(f"  Device ID: {ctx.device_id}")
+    print(f"  User Agent: {ctx.user_agent}")
 
 @step("detect_card_type")
 def detect_card_type(ctx):
@@ -360,9 +508,20 @@ def load_cookie_all_into_jar(ctx):
     except Exception as e:
         raise Exception(f"Failed to load cookie_all_via_tls into jar: {e}")
 
+@step("init_random_data_if_needed")
+def init_random_data_if_needed(ctx):
+    """Khởi tạo dữ liệu random nếu chưa có"""
+    # Chỉ tạo random data nếu chưa có
+    if not hasattr(ctx, 'first_name') or not ctx.first_name:
+        # Gọi hàm init_random_data
+        init_random_data(ctx)
+
 @step("check_membership")
 def check_membership(ctx):
     """Gọi API membership GET với header giống create_credit_card_mobile"""
+    # Đảm bảo có dữ liệu random trước khi gọi
+    init_random_data_if_needed(ctx)
+    
     # Snapshot cookie trước khi gọi
     try:
         ctx.cookies_before_membership = dict((ctx.session.get("cookies") or {}))
@@ -382,7 +541,7 @@ def check_membership(ctx):
            .header("X-O-Fuzzy-Install-Date", "1758800000000")
            .header("Accept", "*/*")
            .header("Accept-Encoding", "gzip, deflate, br")
-           .header("User-Agent", "WMT1H/25.12.2 iOS/15.8.4")
+           .header("User-Agent", ctx.get("user_agent", "WMT1H/25.12.2 iOS/15.8.4"))
            .header("X-O-Mart", "B2C")
            .header("X-O-Segment", "oaoh")
            .header("X-Px-Mobile-Sdk-Version", "3.2.6")
@@ -393,10 +552,10 @@ def check_membership(ctx):
            .header("Wm_mp", "true")
            .header("X-Apollo-Operation-Name", "membership")
            .header("X-O-Platform", "ios")
-           .header("X-Px-Os-Version", "15.8.4")
+           .header("X-Px-Os-Version", ctx.get("ios_version", "15.8.4"))
            .header("Content-Type", "application/json; charset=UTF-8")
-           .header("X-Px-Device-Model", "iPhone 6s Plus")
-           .header("X-O-Device", "iPhone8,2")
+           .header("X-Px-Device-Model", ctx.get("device_model", "iPhone 6s Plus"))
+           .header("X-O-Device", ctx.get("device_id", "iPhone8,2"))
            .header("X-Wm-Client-Name", "glass")
            .header("X-O-Tp-Phase", "tp5")
            .header("Baggage", "deviceType=ios,trafficType=release")
@@ -408,6 +567,9 @@ def check_membership(ctx):
     ctx.membership_status = r.status
     ctx.membership_response = r.text()
     # Snapshot cookie sau khi gọi
+    if "Thanks for being a Walmart customer" not in r.text():
+        ctx.status = "BAN"
+        raise AssertionError("BAN")
     try:
         ctx.cookies_after_membership = dict((ctx.session.get("cookies") or {}))
     except Exception:
@@ -421,6 +583,9 @@ def check_membership(ctx):
 @step("create_credit_card_mobile")
 def create_credit_card_mobile(ctx):
     """Gọi API GraphQL mobile để tạo credit card"""
+    
+    # Đảm bảo có dữ liệu random trước khi tạo credit card
+    init_random_data_if_needed(ctx)
     
     url = "https://www.walmart.com/orchestra/account/graphql/AddCreditCard/3d3e0b30e5f4229e2470bf33dc3f10a89895974880d1047f5188794446a99c5c"
     
@@ -442,17 +607,17 @@ def create_credit_card_mobile(ctx):
         "variables": {
             "input": {
                 "address": {
-                    "addressId": None,
-                    "addressLineOne": "7683 Longbeach",
-                    "addressLineThree": "",
-                    "addressLineTwo": "",
-                    "city": "Longbeach",
-                    "colony": "",
-                    "country": "US",
-                    "countryCallingCode": None,
-                    "municipality": "",
-                    "postalCode": "90003",
-                    "state": "CA"
+                    "addressId": ctx.get("address_id"),
+                    "addressLineOne": ctx.get("address_line_one", ""),
+                    "addressLineThree": ctx.get("address_line_three", ""),
+                    "addressLineTwo": ctx.get("address_line_two", ""),
+                    "city": ctx.get("city", ""),
+                    "colony": ctx.get("colony", ""),
+                    "country": ctx.get("country", "US"),
+                    "countryCallingCode": ctx.get("country_calling_code"),
+                    "municipality": ctx.get("municipality", ""),
+                    "postalCode": ctx.get("postal_code", ""),
+                    "state": ctx.get("state", "")
                 },
                 "cardType": ctx.get("card_type", "VISA"),
                 "countryCallingCode": None,
@@ -460,15 +625,15 @@ def create_credit_card_mobile(ctx):
                 "encryptedPan": ctx.get("protected_s", ""),
                 "expiryMonth": int(ctx.MM),
                 "expiryYear": int(ctx.YYYY),
-                "firstName": "hammer",
+                "firstName": ctx.get("first_name", ""),
                 "integrityCheck": ctx.get("protected_mac", ""),
                 "invokeProfileConsent": None,
                 "isDefault": True,
                 "keyId": ctx.get("key_id", ""),
-                "lastName": "john",
-                "nameOnCard": "john hammer",
+                "lastName": ctx.get("last_name", ""),
+                "nameOnCard": ctx.get("name_on_card", ""),
                 "phase": "0",
-                "phone": "7145852246",
+                "phone": ctx.get("phone", ""),
                 "walletId": None
             }
         }
@@ -481,7 +646,7 @@ def create_credit_card_mobile(ctx):
            .header("X-O-Fuzzy-Install-Date", "1758800000000")
            .header("Accept", "*/*")
            .header("Accept-Encoding", "gzip, deflate, br")
-           .header("User-Agent", "WMT1H/25.12.2 iOS/15.8.4")
+           .header("User-Agent", ctx.get("user_agent", "WMT1H/25.12.2 iOS/15.8.4"))
            .header("X-O-Mart", "B2C")
            .header("X-O-Segment", "oaoh")
            .header("X-Px-Mobile-Sdk-Version", "3.2.6")
@@ -493,10 +658,10 @@ def create_credit_card_mobile(ctx):
            .header("Wm_mp", "true")
            .header("X-Apollo-Operation-Name", "AddCreditCard")
            .header("X-O-Platform", "ios")
-           .header("X-Px-Os-Version", "15.8.4")
+           .header("X-Px-Os-Version", ctx.get("ios_version", "15.8.4"))
            .header("Content-Type", "application/json; charset=UTF-8")
-           .header("X-Px-Device-Model", "iPhone 6s Plus")
-           .header("X-O-Device", "iPhone8,2")
+           .header("X-Px-Device-Model", ctx.get("device_model", "iPhone 6s Plus"))
+           .header("X-O-Device", ctx.get("device_id", "iPhone8,2"))
            .header("X-Wm-Client-Name", "glass")
            .header("X-O-Tp-Phase", "tp5")
            #.header("X-O-Device-Id", "65A12E02-7EDE-4990-95B0-B8FEC3FE58B1")
@@ -555,6 +720,9 @@ def create_credit_card_mobile(ctx):
 @step("delete_payment_method")
 def delete_payment_method(ctx):
     """Xoá payment method bằng pay_id (chỉ chạy khi SUCCESS)"""
+    # Đảm bảo có dữ liệu random trước khi gọi
+    init_random_data_if_needed(ctx)
+    
     #print(f"DEBUG - delete_payment_method: status={ctx.get('status')}, pay_id={ctx.get('pay_id')}")
     
     if ctx.get("status") != "SUCCESS":
@@ -586,7 +754,7 @@ def delete_payment_method(ctx):
            .header("X-O-Fuzzy-Install-Date", "1758800000000")
            .header("Accept", "*/*")
            .header("Accept-Encoding", "gzip, deflate, br")
-           .header("User-Agent", "WMT1H/25.12.2 iOS/15.8.4")
+           .header("User-Agent", ctx.get("user_agent", "WMT1H/25.12.2 iOS/15.8.4"))
            .header("X-O-Mart", "B2C")
            .header("X-O-Segment", "oaoh")
            .header("X-Px-Mobile-Sdk-Version", "3.2.6")
@@ -597,10 +765,10 @@ def delete_payment_method(ctx):
            .header("Wm_mp", "true")
            .header("X-Apollo-Operation-Name", "DeletePaymentMethod")
            .header("X-O-Platform", "ios")
-           .header("X-Px-Os-Version", "15.8.4")
+           .header("X-Px-Os-Version", ctx.get("ios_version", "15.8.4"))
            .header("Content-Type", "application/json; charset=UTF-8")
-           .header("X-Px-Device-Model", "iPhone 6s Plus")
-           .header("X-O-Device", "iPhone8,2")
+           .header("X-Px-Device-Model", ctx.get("device_model", "iPhone 6s Plus"))
+           .header("X-O-Device", ctx.get("device_id", "iPhone8,2"))
            .header("X-Wm-Client-Name", "glass")
            .header("X-O-Tp-Phase", "tp5")
            .header("Baggage", "deviceType=ios,trafficType=release")
