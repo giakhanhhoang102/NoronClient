@@ -49,6 +49,34 @@ def init_input(ctx):
     except Exception:
         raise AssertionError("MM invalid (1-12)")
 
+@step("detect_card_type")
+def detect_card_type(ctx):
+    """Phân loại loại thẻ: VISA, MASTER, AMEX (mặc định UNKNOWN)"""
+    card_number = (ctx.CCNUM or "").replace(" ", "").replace("-", "")
+    card_type = "UNKNOWN"
+    try:
+        if not card_number.isdigit():
+            ctx.card_type = card_type
+            return
+        length = len(card_number)
+        # AMEX: Bắt đầu 34 hoặc 37, độ dài 15
+        if length == 15 and (card_number.startswith("34") or card_number.startswith("37")):
+            card_type = "Amex"
+        # VISA: Bắt đầu 4, độ dài 13,16,19
+        elif card_number.startswith("4") and length in (13, 16, 19):
+            card_type = "Visa"
+        # MASTER: Bắt đầu 51-55 (16 số) hoặc 2221-2720 (16 số)
+        elif length == 16:
+            first_two = int(card_number[:2])
+            first_four = int(card_number[:4])
+            first_six = int(card_number[:6]) if length >= 6 else 0
+            if 51 <= first_two <= 55:
+                card_type = "Mastercard"
+            elif 2221 <= first_four <= 2720:
+                card_type = "Mastercard"
+        ctx.card_type = card_type
+    except Exception:
+        ctx.card_type = "Visa"
 
 @step("gen_random_md5")
 def gen_random_md5(ctx):
@@ -426,7 +454,7 @@ def submit_phpl(ctx):
         "field_useDefaultRetryRule": "",
         "field_paymentRetryWindow": "",
         "field_maxConsecutivePaymentFailures": "",
-        "field_creditCardType": "Visa",
+        "field_creditCardType": ctx.card_type,
         "field_creditCardNumber": "",
         "field_creditCardExpirationMonth": "",
         "field_creditCardExpirationYear": "",
@@ -464,6 +492,7 @@ def submit_phpl(ctx):
         ctx.status = "FAIL"
     else:
         ctx.status = "BAN"
+        raise AssertionError("BAN")
 
 
 @finalize

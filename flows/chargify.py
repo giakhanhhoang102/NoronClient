@@ -132,6 +132,7 @@ def post_chargify_token(ctx):
         ctx.status = "SUCCESS"
     else:
         ctx.status = "BAN"
+        raise AssertionError("BAN")
 
 
 

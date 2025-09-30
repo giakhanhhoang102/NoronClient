@@ -20,8 +20,8 @@ class Settings:
 
     # TLS-Client microservice config
     TLS_BASE: str = _getenv("TLS_BASE", "http://127.0.0.1:3000")
-    #TLS_AUTH_HEADER: str = _getenv("TLS_AUTH_HEADER", "X-Auth-Token")
-    TLS_AUTH_HEADER: str = _getenv("TLS_AUTH_HEADER", "x-api-key")
+    TLS_AUTH_HEADER: str = _getenv("TLS_AUTH_HEADER", "X-Auth-Token")
+    #TLS_AUTH_HEADER: str = _getenv("TLS_AUTH_HEADER", "x-api-key")
     # Dev helpers
     FLOW_RELOAD: bool = _getenv_bool("FLOW_RELOAD", True)   # reload flow module mỗi request (tiện phát triển)
     DEBUG_TRACE: bool = _getenv_bool("DEBUG_TRACE", True)   # bật trace trong flow mặc định

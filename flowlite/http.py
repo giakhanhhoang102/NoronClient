@@ -132,6 +132,13 @@ class _HttpBuilder:
     def via_requests(self, no_proxy: bool = True) -> "_HttpBuilder":
         self._via = "requests"; self._no_proxy = no_proxy; return self
 
+    def via_systemnet(self) -> "_HttpBuilder":
+        """
+        Route request qua forwarder SystemNet (.NET) để có JA3/JA4 giống System.Net + TLS1.3.
+        Yêu cầu cấu hình ctx._internals.systemnet: { base, auth_header, token } và một service forward tương tự /forward.
+        """
+        self._via = "systemnet"; return self
+
     def label(self, name: str) -> "_HttpBuilder":
         self._label = name; return self
 
@@ -263,6 +270,8 @@ class _HttpBuilder:
         # Send
         if route == "tls":
             resp = self._send_via_tls(url, pairs, body_str)
+        elif route == "systemnet":
+            resp = self._send_via_systemnet(url, pairs, body_str)
         else:
             resp = self._send_via_requests(url, pairs, body_str)
 
@@ -336,6 +345,51 @@ class _HttpBuilder:
         used_protocol = j.get("usedProtocol")
         target = j.get("target") or url
 
+        return HttpResponse(url=target, status=status, headers=headers, body_text=body_text, cookies=cookies, used_protocol=used_protocol, target=target)
+
+    # ---- send via SystemNet forwarder (.NET) ----
+    def _send_via_systemnet(self, url: str, pairs: List[Tuple[str, str]], body_str: Optional[str]) -> HttpResponse:
+        """
+        Gửi request qua forwarder .NET (System.Net HttpClient) để có JA3/JA4 của SystemNet + TLS1.3.
+        Cấu hình mong đợi trong ctx._internals.systemnet:
+          - base: URL của forwarder (vd: http://127.0.0.1:3100)
+          - auth_header: tên header auth (vd: X-Auth-Token)
+          - token: giá trị token
+        Forwarder cần expose endpoint POST /forward với payload tương tự via_tls.
+        """
+        sys_cfg = ((self.ctx.get("_internals") or {}).get("systemnet") or {})
+        base = sys_cfg.get("base") or "http://127.0.0.1:3100"
+        token_header = sys_cfg.get("auth_header") or "X-Auth-Token"
+        token = sys_cfg.get("token") or (self.ctx.get("_internals") or {}).get("tls_auth_token")
+        if not token:
+            raise RuntimeError("SystemNet auth token is required for via_systemnet requests")
+
+        payload = {
+            "uri": url,
+            "method": self.method,
+            "body": body_str or "",
+            "headers": pairs,  # giữ nguyên thứ tự
+            # tuỳ forwarder: có thể hỗ trợ proxyUrl, httpVersion, securityProtocol...
+            "options": {
+                "httpVersion": "2.0",
+                "securityProtocol": "TLS13"
+            }
+        }
+
+        r = requests.post(f"{base}/forward",
+                          headers={token_header: token, "content-type": "application/json"},
+                          data=json.dumps(payload).encode("utf-8"),
+                          timeout=(self._timeout_s or 60.0))
+        r.raise_for_status()
+        j = r.json()
+
+        status = int(j.get("status", 0))
+        body_text = j.get("body") or ""
+        headers_raw = j.get("headers") or {}
+        headers = {k: (v if isinstance(v, list) else [str(v)]) for k, v in headers_raw.items()}
+        cookies = j.get("cookies") or {}
+        used_protocol = j.get("usedProtocol") or "h2"
+        target = j.get("target") or url
         return HttpResponse(url=target, status=status, headers=headers, body_text=body_text, cookies=cookies, used_protocol=used_protocol, target=target)
 
     # ---- send via requests (direct) ----
