@@ -1,0 +1,8 @@
+ERROR CVV
+{"data":{"createAccountCreditCard":{"errors":[{"code":"ERROR_AVS_REJECTED","message":"CVV verification failed - Result reason: AV433, Credential check: CRN"}],"creditCard":null,"dsCard":null}}}
+
+SUCCESS
+{"data":{"createAccountCreditCard":{"errors":[],"creditCard":{"__typename":"CreditCard","firstName":"hoang","lastName":"hoang","nameOnCard":"hoang hoang","phone":"(714) 938-4923","addressLineOne":"9483 Long Beach Blvd","addressLineTwo":"","city":"Long Beach","state":"CA","colony":null,"municipality":null,"postalCode":"90805","cardType":"VISA","phoneCountry":"US","expiryYear":2028,"expiryMonth":6,"lastFour":"4903","id":"49bf9a51-010a-4763-8caf-f9f86cd6e3d5","isDefault":true,"instrumentMetaData":{"brand":{"id":"","name":""},"program":{"id":"","name":""}},"isWalletPoweredByONE":false,"isExpired":false,"needVerifyCVV":false,"isEditable":true,"capOneProperties":{"shouldPromptForLink":false},"linkedCard":null},"dsCard":null}}}
+
+DIE
+{"data":{"createAccountCreditCard":{"__typename":"MutateAccountCreditCardResponse","creditCard":null,"dsCard":null,"errors":[{"__typename":"AccountPaymentError","code":"ERROR_AVS_REJECTED"}]}}}
