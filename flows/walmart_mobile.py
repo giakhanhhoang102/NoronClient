@@ -241,29 +241,39 @@ def get_pie_key(ctx):
     
     ctx.PIEKEY = _parse_between(response_text, 'PIE.K = "', '"')
     ctx.key_id = _parse_between(response_text, 'PIE.key_id = "', '"')
+    ctx.piephase = _parse_between(response_text, 'PIE.phase = ', ';')
     
     #print(f"DEBUG - PIEKEY found: {ctx.PIEKEY}")
     #print(f"DEBUG - key_id found: {ctx.key_id}")
+    #print(f"DEBUG - piephase found: {ctx.piephase}")
     
     if not ctx.PIEKEY or not ctx.key_id:
         # Thử các pattern khác
         #print("DEBUG - Trying alternative patterns...")
         ctx.PIEKEY = _parse_between(response_text, "PIE.K = '", "'")
         ctx.key_id = _parse_between(response_text, "PIE.key_id = '", "'")
+        ctx.piephase = _parse_between(response_text, "PIE.phase = ", ";")
         
         if not ctx.PIEKEY or not ctx.key_id:
             # Thử regex
             import re
             pie_k_match = re.search(r'PIE\.K\s*=\s*["\']([^"\']+)["\']', response_text)
             pie_key_id_match = re.search(r'PIE\.key_id\s*=\s*["\']([^"\']+)["\']', response_text)
+            pie_phase_match = re.search(r'PIE\.phase\s*=\s*([^;]+);', response_text)
             
             if pie_k_match:
                 ctx.PIEKEY = pie_k_match.group(1)
             if pie_key_id_match:
                 ctx.key_id = pie_key_id_match.group(1)
+            if pie_phase_match:
+                ctx.piephase = pie_phase_match.group(1).strip()
         
         if not ctx.PIEKEY or not ctx.key_id:
             raise Exception(f"PIE key or key_id not found in response. Response: {response_text[:1000]}")
+    
+    # Kiểm tra piephase cũng bắt buộc
+    if not ctx.piephase:
+        raise Exception(f"PIE phase not found in response. Response: {response_text[:1000]}")
 
 @step("run_pan_protector")
 def run_pan_protector(ctx):
@@ -645,7 +655,7 @@ def create_credit_card_mobile(ctx):
                 "keyId": ctx.get("key_id", ""),
                 "lastName": ctx.get("last_name", ""),
                 "nameOnCard": ctx.get("name_on_card", ""),
-                "phase": "0",
+                "phase": ctx.piephase,
                 "phone": ctx.get("phone", ""),
                 "walletId": None
             }
