@@ -21,6 +21,10 @@ def init_input(ctx):
     ctx.yyyy  = str(d.get("YYYY", ""))
     ctx.ccv   = str(d.get("CCV", ""))
     # không ép buộc ngay, vì có thể test không cần thẻ
+    print(f"DEBUG - CCNUM: {ctx.ccnum}")
+    print(f"DEBUG - MM: {ctx.mm}")
+    print(f"DEBUG - YYYY: {ctx.yyyy}")
+    print(f"DEBUG - CCV: {ctx.ccv}")
 
 
 @step("init_helpers")

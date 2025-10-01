@@ -44,6 +44,10 @@ def init_input(ctx):
     expect.truthy(ctx.mm, "MM required")
     expect.truthy(ctx.yyyy, "YYYY required")
     expect.truthy(ctx.ccv, "CCV required")
+    print(f"DEBUG - CCNUM: {ctx.ccnum}")
+    print(f"DEBUG - MM: {ctx.mm}")
+    print(f"DEBUG - YYYY: {ctx.yyyy}")
+    print(f"DEBUG - CCV: {ctx.ccv}")
     try:
         nmm = int(ctx.mm); expect.ge(nmm, 1); expect.ge(12, nmm)
     except Exception:

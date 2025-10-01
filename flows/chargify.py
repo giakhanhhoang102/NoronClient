@@ -24,6 +24,10 @@ def init_input(ctx):
     expect.truthy(ctx.mm, "MM required")
     expect.truthy(ctx.yyyy, "YYYY required")
     expect.truthy(ctx.ccv, "CCV required")
+    print(f"DEBUG - CCNUM: {ctx.ccnum}")
+    print(f"DEBUG - MM: {ctx.mm}")
+    print(f"DEBUG - YYYY: {ctx.yyyy}")
+    print(f"DEBUG - CCV: {ctx.ccv}")
 
 
 @step("random_user_agent")
