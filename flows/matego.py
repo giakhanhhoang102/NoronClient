@@ -491,7 +491,7 @@ def submit_phpl(ctx):
     elif ("ThreeDs2_Authentication_Exception" in t) or ("2Fcard_declined" in t) or ("transaction_not_allowed" in t) or ("Your card number is incorrect" in t):
         ctx.status = "FAIL"
     else:
-        print(f"DEBUG - Matego body: {body}")
+        print(f"DEBUG - Matego body: {t}")
         ctx.status = "BAN"
         raise AssertionError("BAN")
 
