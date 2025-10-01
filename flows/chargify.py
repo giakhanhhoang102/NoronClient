@@ -58,7 +58,6 @@ def fetch_main_iframe_js(ctx):
            .send())
 
     t = r.text() or ""
-    print(f"DEBUG - IP main: {t}")
     ctx.revision = http.re(r'revision:"([^"]+)"', t, 1)
 
 
