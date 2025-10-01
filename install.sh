@@ -39,25 +39,40 @@ log_error() {
 
 # Check if running as root
 if [[ $EUID -eq 0 ]]; then
-   log_error "This script should not be run as root. Please run as a regular user with sudo privileges."
-   exit 1
+   log_warning "Running as root. This is not recommended for security reasons."
+   log_warning "Consider running as a regular user with $SUDO_CMD privileges instead."
+   read -p "Do you want to continue as root? (yes/no): " confirm_root
+   if [[ $confirm_root != "yes" ]]; then
+       log_info "Installation cancelled. Please run as a regular user with $SUDO_CMD privileges."
+       exit 0
+   fi
 fi
 
-# Check if sudo is available
-if ! command -v sudo &> /dev/null; then
+# Check if sudo is available (skip if running as root)
+if [[ $EUID -ne 0 ]] && ! command -v sudo &> /dev/null; then
     log_error "sudo is not installed. Please install sudo first."
     exit 1
 fi
+
+# Set sudo command based on user
+if [[ $EUID -eq 0 ]]; then
+    SUDO_CMD=""
+else
+    SUDO_CMD="sudo"
+fi
+
+# Export for use in subshells
+export SUDO_CMD
 
 log_info "Starting NORONCLIENT installation..."
 
 # Update system packages
 log_info "Updating system packages..."
-sudo apt update && sudo apt upgrade -y
+$SUDO_CMD apt update && $SUDO_CMD apt upgrade -y
 
 # Install required system packages
 log_info "Installing system dependencies..."
-sudo apt install -y \
+$SUDO_CMD apt install -y \
     python3.11 \
     python3.11-venv \
     python3.11-dev \
@@ -85,7 +100,7 @@ sudo apt install -y \
 # Create application user
 log_info "Creating application user..."
 if ! id "$APP_USER" &>/dev/null; then
-    sudo useradd -r -s /bin/false -d "$APP_DIR" -m "$APP_USER"
+    $SUDO_CMD useradd -r -s /bin/false -d "$APP_DIR" -m "$APP_USER"
     log_success "User $APP_USER created"
 else
     log_warning "User $APP_USER already exists"
@@ -93,31 +108,31 @@ fi
 
 # Create application directory
 log_info "Creating application directory..."
-sudo mkdir -p "$APP_DIR"
-sudo chown "$APP_USER:$APP_USER" "$APP_DIR"
+$SUDO_CMD mkdir -p "$APP_DIR"
+$SUDO_CMD chown "$APP_USER:$APP_USER" "$APP_DIR"
 
 # Copy application files
 log_info "Copying application files..."
-sudo cp -r . "$APP_DIR/"
-sudo chown -R "$APP_USER:$APP_USER" "$APP_DIR"
+$SUDO_CMD cp -r . "$APP_DIR/"
+$SUDO_CMD chown -R "$APP_USER:$APP_USER" "$APP_DIR"
 
 # Create Python virtual environment
 log_info "Creating Python virtual environment..."
-sudo -u "$APP_USER" python3.11 -m venv "$APP_DIR/venv"
+$SUDO_CMD -u "$APP_USER" python3.11 -m venv "$APP_DIR/venv"
 
 # Activate virtual environment and install dependencies
 log_info "Installing Python dependencies..."
-sudo -u "$APP_USER" "$APP_DIR/venv/bin/pip" install --upgrade pip
-sudo -u "$APP_USER" "$APP_DIR/venv/bin/pip" install -r "$APP_DIR/requirements.txt"
+$SUDO_CMD -u "$APP_USER" "$APP_DIR/venv/bin/pip" install --upgrade pip
+$SUDO_CMD -u "$APP_USER" "$APP_DIR/venv/bin/pip" install -r "$APP_DIR/requirements.txt"
 
 # Create logs directory
 log_info "Creating logs directory..."
-sudo mkdir -p "$APP_DIR/logs"
-sudo chown -R "$APP_USER:$APP_USER" "$APP_DIR/logs"
+$SUDO_CMD mkdir -p "$APP_DIR/logs"
+$SUDO_CMD chown -R "$APP_USER:$APP_USER" "$APP_DIR/logs"
 
 # Create systemd service file
 log_info "Creating systemd service..."
-sudo tee /etc/systemd/system/${SERVICE_NAME}.service > /dev/null <<EOF
+$SUDO_CMD tee /etc/systemd/system/${SERVICE_NAME}.service > /dev/null <<EOF
 [Unit]
 Description=NORONCLIENT Application
 After=network.target
@@ -157,13 +172,13 @@ EOF
 
 # Configure firewall
 log_info "Configuring firewall..."
-sudo ufw --force enable
-sudo ufw allow ssh
-sudo ufw allow 8000/tcp
+$SUDO_CMD ufw --force enable
+$SUDO_CMD ufw allow ssh
+$SUDO_CMD ufw allow 8000/tcp
 
 # Create logrotate configuration
 log_info "Creating logrotate configuration..."
-sudo tee /etc/logrotate.d/${SERVICE_NAME} > /dev/null <<EOF
+$SUDO_CMD tee /etc/logrotate.d/${SERVICE_NAME} > /dev/null <<EOF
 $APP_DIR/logs/*.log {
     daily
     missingok
@@ -180,7 +195,7 @@ EOF
 
 # Create environment file
 log_info "Creating environment configuration..."
-sudo tee "$APP_DIR/.env" > /dev/null <<EOF
+$SUDO_CMD tee "$APP_DIR/.env" > /dev/null <<EOF
 # NORONCLIENT Environment Configuration
 DEBUG=false
 HOST=127.0.0.1
@@ -209,61 +224,61 @@ ENABLE_MASK_COOKIES=1
 DEBUG_TRACE=false
 EOF
 
-sudo chown "$APP_USER:$APP_USER" "$APP_DIR/.env"
-sudo chmod 600 "$APP_DIR/.env"
+$SUDO_CMD chown "$APP_USER:$APP_USER" "$APP_DIR/.env"
+$SUDO_CMD chmod 600 "$APP_DIR/.env"
 
 # Create data directory
-sudo mkdir -p "$APP_DIR/data"
-sudo chown -R "$APP_USER:$APP_USER" "$APP_DIR/data"
+$SUDO_CMD mkdir -p "$APP_DIR/data"
+$SUDO_CMD chown -R "$APP_USER:$APP_USER" "$APP_DIR/data"
 
 # Reload systemd and start services
 log_info "Starting services..."
-sudo systemctl daemon-reload
-sudo systemctl enable ${SERVICE_NAME}
-sudo systemctl start ${SERVICE_NAME}
+$SUDO_CMD systemctl daemon-reload
+$SUDO_CMD systemctl enable ${SERVICE_NAME}
+$SUDO_CMD systemctl start ${SERVICE_NAME}
 
 # Wait for service to start
 sleep 5
 
 # Check service status
-if sudo systemctl is-active --quiet ${SERVICE_NAME}; then
+if $SUDO_CMD systemctl is-active --quiet ${SERVICE_NAME}; then
     log_success "Service $SERVICE_NAME is running"
 else
     log_error "Service $SERVICE_NAME failed to start"
-    sudo systemctl status ${SERVICE_NAME}
+    $SUDO_CMD systemctl status ${SERVICE_NAME}
     exit 1
 fi
 
 # Create management script
 log_info "Creating management script..."
-sudo tee /usr/local/bin/${SERVICE_NAME}-ctl > /dev/null <<EOF
+$SUDO_CMD tee /usr/local/bin/${SERVICE_NAME}-ctl > /dev/null <<EOF
 #!/bin/bash
 # NORONCLIENT Management Script
 
 case "\$1" in
     start)
-        sudo systemctl start $SERVICE_NAME
+        $SUDO_CMD systemctl start $SERVICE_NAME
         echo "Service started"
         ;;
     stop)
-        sudo systemctl stop $SERVICE_NAME
+        $SUDO_CMD systemctl stop $SERVICE_NAME
         echo "Service stopped"
         ;;
     restart)
-        sudo systemctl restart $SERVICE_NAME
+        $SUDO_CMD systemctl restart $SERVICE_NAME
         echo "Service restarted"
         ;;
     status)
-        sudo systemctl status $SERVICE_NAME
+        $SUDO_CMD systemctl status $SERVICE_NAME
         ;;
     logs)
-        sudo journalctl -u $SERVICE_NAME -f
+        $SUDO_CMD journalctl -u $SERVICE_NAME -f
         ;;
     update)
         cd $APP_DIR
-        sudo -u $APP_USER git pull
-        sudo -u $APP_USER $APP_DIR/venv/bin/pip install -r requirements.txt
-        sudo systemctl restart $SERVICE_NAME
+        $SUDO_CMD -u $APP_USER git pull
+        $SUDO_CMD -u $APP_USER $APP_DIR/venv/bin/pip install -r requirements.txt
+        $SUDO_CMD systemctl restart $SERVICE_NAME
         echo "Application updated and restarted"
         ;;
     *)
@@ -273,11 +288,11 @@ case "\$1" in
 esac
 EOF
 
-sudo chmod +x /usr/local/bin/${SERVICE_NAME}-ctl
+$SUDO_CMD chmod +x /usr/local/bin/${SERVICE_NAME}-ctl
 
 # Create backup script
 log_info "Creating backup script..."
-sudo tee /usr/local/bin/${SERVICE_NAME}-backup > /dev/null <<EOF
+$SUDO_CMD tee /usr/local/bin/${SERVICE_NAME}-backup > /dev/null <<EOF
 #!/bin/bash
 # NORONCLIENT Backup Script
 
@@ -300,11 +315,11 @@ echo "Backup created: \$BACKUP_FILE"
 find "\$BACKUP_DIR" -name "${SERVICE_NAME}_backup_*.tar.gz" -mtime +7 -delete
 EOF
 
-sudo chmod +x /usr/local/bin/${SERVICE_NAME}-backup
+$SUDO_CMD chmod +x /usr/local/bin/${SERVICE_NAME}-backup
 
 # Create cron job for backup
 log_info "Setting up backup cron job..."
-echo "0 2 * * * /usr/local/bin/${SERVICE_NAME}-backup" | sudo crontab -u root -
+echo "0 2 * * * /usr/local/bin/${SERVICE_NAME}-backup" | $SUDO_CMD crontab -u root -
 
 # Final status check
 log_info "Performing final status check..."
@@ -327,11 +342,11 @@ echo "  - User: $APP_USER"
 echo "  - Web Interface: http://$(curl -s ifconfig.me)/"
 echo ""
 echo "Management Commands:"
-echo "  - Start:   sudo systemctl start $SERVICE_NAME"
-echo "  - Stop:    sudo systemctl stop $SERVICE_NAME"
-echo "  - Restart: sudo systemctl restart $SERVICE_NAME"
-echo "  - Status:  sudo systemctl status $SERVICE_NAME"
-echo "  - Logs:    sudo journalctl -u $SERVICE_NAME -f"
+echo "  - Start:   $SUDO_CMD systemctl start $SERVICE_NAME"
+echo "  - Stop:    $SUDO_CMD systemctl stop $SERVICE_NAME"
+echo "  - Restart: $SUDO_CMD systemctl restart $SERVICE_NAME"
+echo "  - Status:  $SUDO_CMD systemctl status $SERVICE_NAME"
+echo "  - Logs:    $SUDO_CMD journalctl -u $SERVICE_NAME -f"
 echo "  - Control: $SERVICE_NAME-ctl {start|stop|restart|status|logs|update}"
 echo "  - Backup:  $SERVICE_NAME-ctl-backup"
 echo ""
@@ -342,7 +357,7 @@ echo ""
 echo "Next Steps:"
 echo "1. Edit $APP_DIR/.env to configure your settings"
 echo "2. Update TLS_AUTH_TOKEN in the environment file"
-echo "3. Restart the service: sudo systemctl restart $SERVICE_NAME"
-echo "4. Check logs: sudo journalctl -u $SERVICE_NAME -f"
+echo "3. Restart the service: $SUDO_CMD systemctl restart $SERVICE_NAME"
+echo "4. Check logs: $SUDO_CMD journalctl -u $SERVICE_NAME -f"
 echo ""
 log_success "Installation completed successfully!"
