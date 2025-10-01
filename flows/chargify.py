@@ -125,12 +125,14 @@ def post_chargify_token(ctx):
         "Your card number is incorrect",
         "Your card was declined",
         "cannot be expired",
+        "expiration year is invalid"
     ]
     if any(m in body for m in fail_markers):
         ctx.status = "FAIL"
-    elif (ctx.chargify_token and ctx.chargify_token.startswith("tok")) or ("security code is incorrect" in body):
+    elif (ctx.chargify_token and ctx.chargify_token.startswith("tok")) or ("security code is incorrect" in body) or ("security code is invalid" in body):
         ctx.status = "SUCCESS"
     else:
+        print(f"DEBUG - Chargify body: {body}")
         ctx.status = "BAN"
         raise AssertionError("BAN")
 

@@ -52,7 +52,7 @@ def init_input(ctx):
 @step("detect_card_type")
 def detect_card_type(ctx):
     """Phân loại loại thẻ: VISA, MASTER, AMEX (mặc định UNKNOWN)"""
-    card_number = (ctx.CCNUM or "").replace(" ", "").replace("-", "")
+    card_number = (ctx.ccnum or "").replace(" ", "").replace("-", "")
     card_type = "UNKNOWN"
     try:
         if not card_number.isdigit():

@@ -44,7 +44,7 @@ def load_flow(project: str) -> Flow:
     flow = getattr(mod, "flow")
     # Auto enable debug plugins theo ENV (tuỳ chọn)
 
-    if os.environ.get("ENABLE_CURL_DUMP", "1") == "1":
+    if os.environ.get("ENABLE_CURL_DUMP", "0") == "1":
         flow.use(CurlDump, dir=os.environ.get("CURL_DUMP_DIR", "./logs/curl"),
                 include_response=True, max_body=int(os.environ.get("CURL_DUMP_MAX_BODY", "4096")))
 
