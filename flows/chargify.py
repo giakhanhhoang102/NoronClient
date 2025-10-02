@@ -24,10 +24,6 @@ def init_input(ctx):
     expect.truthy(ctx.mm, "MM required")
     expect.truthy(ctx.yyyy, "YYYY required")
     expect.truthy(ctx.ccv, "CCV required")
-    print(f"DEBUG - CCNUM: {ctx.ccnum}")
-    print(f"DEBUG - MM: {ctx.mm}")
-    print(f"DEBUG - YYYY: {ctx.yyyy}")
-    print(f"DEBUG - CCV: {ctx.ccv}")
 
 
 @step("random_user_agent")
@@ -133,10 +129,12 @@ def post_chargify_token(ctx):
     ]
     if any(m in body for m in fail_markers):
         ctx.status = "FAIL"
+        print(f"DEBUG - Chargify status: {ctx.status}")
     elif (ctx.chargify_token and ctx.chargify_token.startswith("tok")) or ("security code is incorrect" in body) or ("security code is invalid" in body):
         ctx.status = "SUCCESS"
     else:
         print(f"DEBUG - Chargify body: {body}")
+        print(f"DEBUG - Chargify status: {ctx.status}")
         ctx.status = "BAN"
         raise AssertionError("BAN")
 

