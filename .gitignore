@@ -11,3 +11,5 @@ dist/
 build/
 *.log
 *.DS_Store
+*.db
+flowlite/plugins/database/
