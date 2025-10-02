@@ -17,16 +17,21 @@ def process(input_path, output_path, skip_missing=False, encoding="utf-8"):
                 continue
 
             parts = line.split("|")
-            try:
-                username = parts[3].strip()  # **luôn** lấy vị trí index 3
-            except IndexError:
+            # Nếu không có đủ 4 field (index 3) xử lý theo --skip-missing
+            if len(parts) <= 3:
                 if skip_missing:
                     # bỏ qua dòng không có trường thứ 4
                     continue
                 else:
-                    username = ""  # vẫn ghi nhưng là rỗng
+                    username = ""
+            else:
+                # DÙNG split rồi join lại: nối các phần từ index 3 về sau bằng '|'
+                username = "|".join(parts[3:]).strip()
+                # loại bỏ bất kỳ ký tự xuống dòng thừa nếu có
+                username = username.replace("\n", "").replace("\r", "")
 
-            fout.write(f"{{{{{username}}}}}\n")
+            # Ghi dưới dạng {{{username}}}
+            fout.write("{{{" + username + "}}}" + "\n")
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser(description="Extract username from column index 3 and write as {{{username}}}")

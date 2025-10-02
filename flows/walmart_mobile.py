@@ -182,7 +182,7 @@ def init_random_data(ctx):
 
 @step("detect_card_type")
 def detect_card_type(ctx):
-    """Phân loại loại thẻ: VISA, MASTER, AMEX (mặc định UNKNOWN)"""
+    """Phân loại loại thẻ: VISA, MASTER, AMEX, DISCOVER (mặc định UNKNOWN)"""
     card_number = (ctx.CCNUM or "").replace(" ", "").replace("-", "")
     card_type = "UNKNOWN"
     try:
@@ -196,15 +196,24 @@ def detect_card_type(ctx):
         # VISA: Bắt đầu 4, độ dài 13,16,19
         elif card_number.startswith("4") and length in (13, 16, 19):
             card_type = "VISA"
-        # MASTER: Bắt đầu 51-55 (16 số) hoặc 2221-2720 (16 số)
+        # MASTER và DISCOVER: Cả hai đều 16 số
         elif length == 16:
             first_two = int(card_number[:2])
             first_four = int(card_number[:4])
-            first_six = int(card_number[:6]) if length >= 6 else 0
+            first_six = int(card_number[:6])
+            
+            # MASTER: Bắt đầu 51-55 hoặc 2221-2720
             if 51 <= first_two <= 55:
                 card_type = "MASTERCARD"
             elif 2221 <= first_four <= 2720:
                 card_type = "MASTERCARD"
+            # DISCOVER: Bắt đầu 6011, 622126-622925, 624000-626999, 628200-628899, 65
+            elif (card_number.startswith("6011") or 
+                  (622126 <= first_six <= 622925) or 
+                  (624000 <= first_six <= 626999) or 
+                  (628200 <= first_six <= 628899) or 
+                  first_two == 65):
+                card_type = "DISCOVER"
         ctx.card_type = card_type
     except Exception:
         ctx.card_type = "VISA"
