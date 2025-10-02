@@ -75,9 +75,9 @@ def detect_card_type(ctx):
             first_four = int(card_number[:4])
             first_six = int(card_number[:6]) if length >= 6 else 0
             if 51 <= first_two <= 55:
-                card_type = "Mastercard"
+                card_type = "MasterCard"
             elif 2221 <= first_four <= 2720:
-                card_type = "Mastercard"
+                card_type = "MasterCard"
         ctx.card_type = card_type
     except Exception:
         ctx.card_type = "Visa"
