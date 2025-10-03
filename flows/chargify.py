@@ -147,7 +147,7 @@ def done(ctx):
         "status": ctx.status,
         "tok": ctx.tok,
         "errors_site": ctx.errors_site,
-        "message": ctx.status + " - G2Check.CC",
+        "message": f"{ctx.get('message') or ''} - G2Check.CC",
     }
 
 

@@ -818,7 +818,7 @@ def done(ctx):
     """Kết thúc flow và trả về kết quả"""
     return {
         "status": ctx.get("status", "BAN"),
-        "message": ctx.get("message") + " - G2Check.CC",
+        "message": f"{ctx.get('message') or ''} - G2Check.CC",
         #"uuid": ctx.get("uuid"),
         #"http_traces": len(ctx.meta.get("http_trace") or []),
         #"CCNUM": ctx.CCNUM,

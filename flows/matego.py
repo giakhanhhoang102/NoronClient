@@ -503,7 +503,7 @@ def done(ctx):
     return {
         "status": ctx.status,
         "data": ctx.ccnum+"|"+ctx.mm+"|"+ctx.yyyy+"|"+ctx.ccv,
-        "message": ctx.status + " - G2Check.CC",
+        "message": f"{ctx.get('message') or ''} - G2Check.CC",
         "dumpbody": ctx.dumpbody,
     }
 
