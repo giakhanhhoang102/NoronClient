@@ -132,6 +132,7 @@ def post_chargify_token(ctx):
         print(f"DEBUG - Chargify status: {ctx.status}")
     elif (ctx.chargify_token and ctx.chargify_token.startswith("tok")) or ("security code is incorrect" in body) or ("security code is invalid" in body):
         ctx.status = "SUCCESS"
+        print(f"DEBUG - Chargify status: {ctx.status}")
     else:
         print(f"DEBUG - Chargify body: {body}")
         print(f"DEBUG - Chargify status: {ctx.status}")
