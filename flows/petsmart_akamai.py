@@ -42,8 +42,8 @@ def parse_input_data(ctx):
     input_data = ctx.get("data", {})
     
     # Parse các giá trị cần thiết
-    email = input_data.get("EMAIL", "")
-    password = input_data.get("PASS", "")
+    email = input_data.get("Email", "")
+    password = input_data.get("Pass", "")
     
     print(f"DEBUG - Testing EMAIL: {email} PASS: {password}")
     # print(f"DEBUG - Parsed PASS: {password}")
