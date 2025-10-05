@@ -79,19 +79,7 @@ def parse_input_data(ctx):
     import random
     
     chrome_versions = [
-        "120.0.6099.216", "120.0.6099.234", "120.0.6099.235", "120.0.6099.236",
-        "121.0.6167.85", "121.0.6167.86", "121.0.6167.140", "121.0.6167.141",
-        "122.0.6261.69", "122.0.6261.70", "122.0.6261.94", "122.0.6261.95",
-        "123.0.6312.58", "123.0.6312.59", "123.0.6312.86", "123.0.6312.87",
-        "124.0.6367.60", "124.0.6367.61", "124.0.6367.78", "124.0.6367.79",
-        "125.0.6422.60", "125.0.6422.61", "125.0.6422.78", "125.0.6422.79",
-        "126.0.6478.60", "126.0.6478.61", "126.0.6478.114", "126.0.6478.115",
-        "127.0.6533.58", "127.0.6533.59", "127.0.6533.78", "127.0.6533.79",
-        "128.0.6613.60", "128.0.6613.61", "128.0.6613.84", "128.0.6613.85",
-        "129.0.6668.60", "129.0.6668.61", "129.0.6668.89", "129.0.6668.90",
-        "130.0.6723.58", "130.0.6723.59", "130.0.6723.116", "130.0.6723.117",
-        "131.0.6778.60", "131.0.6778.61", "131.0.6778.85", "131.0.6778.86",
-        "132.0.6835.60", "132.0.6835.61", "132.0.6835.90", "132.0.6835.91",
+        "132.0.6835.61", "132.0.6835.90", "132.0.6835.91",
         "133.0.6890.60", "133.0.6890.61", "133.0.6890.86", "133.0.6890.87",
         "134.0.6945.60", "134.0.6945.61", "134.0.6945.90", "134.0.6945.91",
         "135.0.7000.60", "135.0.7000.61", "135.0.7000.89", "135.0.7000.90",
@@ -125,6 +113,9 @@ def parse_input_data(ctx):
 def get_petsmart_homepage(ctx):
     """Step 1: Gọi đến trang chủ Petsmart"""
     # print("DEBUG - Step 1: Getting Petsmart homepage...")
+    
+    # Lấy User-Agent từ context
+    user_agent = ctx.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
     
     url = "https://www.petsmart.com/sign-in/"
     
@@ -173,6 +164,9 @@ def get_petsmart_homepage(ctx):
 def get_hyper_script(ctx):
     """Step 2: Gọi đến hyper_script_path từ Hyper SDK"""
     # print("DEBUG - Step 2: Getting hyper script...")
+    
+    # Lấy User-Agent từ context
+    user_agent = ctx.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
     
     # Kiểm tra xem có hyper_script_path không
     hyper_script_path = ctx.get("hyper_script_path")
@@ -245,6 +239,9 @@ def extract_cookies(ctx):
 def get_client_ip(ctx):
     """Step 4: Lấy IP address từ ipify API"""
     # print("DEBUG - Step 4: Getting client IP...")
+    
+    # Lấy User-Agent từ context
+    user_agent = ctx.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
     
     url = "https://api.ipify.org/?format=json"
     
@@ -381,6 +378,9 @@ def post_sensor_data(ctx):
     """Step 6: POST sensor data đến hyper script URL"""
     # print("DEBUG - Step 6: Posting sensor data...")
     
+    # Lấy User-Agent từ context
+    user_agent = ctx.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+    
     # Lấy sensor data từ step trước
     sensor_data = ctx.get("sensor_data", "")
     hyper_script_path = ctx.get("hyper_script_path", "")
@@ -455,6 +455,9 @@ def post_sensor_data(ctx):
 def check_abck_cookie(ctx):
     """Step 7: Kiểm tra _abck cookie có ~0~ không"""
     # print("DEBUG - Step 7: Checking _abck cookie...")
+    
+    # Lấy User-Agent từ context
+    user_agent = ctx.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
     
     # Lấy cookies mới từ post_sensor_data (CookieManager đã cập nhật)
     cookies = ctx.session.get("cookies", {})
@@ -722,6 +725,9 @@ def call_auth_api(ctx):
     """Step 9: Call đến API auth cuối cùng"""
     # print("DEBUG - Step 9: Calling auth API...")
     
+    # Lấy User-Agent từ context
+    user_agent = ctx.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+    
     url = "https://www.petsmart.com/api/hcp/auth"
     
     # Tạo payload JSON từ dữ liệu đã parse
@@ -813,6 +819,9 @@ def get_payments(ctx):
     if not ctx.auth_success:
         return
 
+    # Lấy User-Agent từ context
+    user_agent = ctx.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+    
     url = "https://www.petsmart.com/api/acp/account/payments"
 
     # print(f"DEBUG - Payments API URL: {url}")
@@ -904,6 +913,9 @@ def get_loyalty_points(ctx):
         return
     # print("DEBUG - Step 12: Getting loyalty points...")
 
+    # Lấy User-Agent từ context
+    user_agent = ctx.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+    
     url = "https://www.petsmart.com/api/cwea/loyalty/getMemberPoints"
 
     # print(f"DEBUG - Loyalty API URL: {url}")
