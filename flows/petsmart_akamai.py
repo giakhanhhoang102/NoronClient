@@ -75,6 +75,49 @@ def parse_input_data(ctx):
         ctx.error_reason = "Password too short"
         raise Exception("Password too short")
     
+    # Random User-Agent Chrome Windows 10-11 với độ uy tín cao
+    import random
+    
+    chrome_versions = [
+        "120.0.6099.216", "120.0.6099.234", "120.0.6099.235", "120.0.6099.236",
+        "121.0.6167.85", "121.0.6167.86", "121.0.6167.140", "121.0.6167.141",
+        "122.0.6261.69", "122.0.6261.70", "122.0.6261.94", "122.0.6261.95",
+        "123.0.6312.58", "123.0.6312.59", "123.0.6312.86", "123.0.6312.87",
+        "124.0.6367.60", "124.0.6367.61", "124.0.6367.78", "124.0.6367.79",
+        "125.0.6422.60", "125.0.6422.61", "125.0.6422.78", "125.0.6422.79",
+        "126.0.6478.60", "126.0.6478.61", "126.0.6478.114", "126.0.6478.115",
+        "127.0.6533.58", "127.0.6533.59", "127.0.6533.78", "127.0.6533.79",
+        "128.0.6613.60", "128.0.6613.61", "128.0.6613.84", "128.0.6613.85",
+        "129.0.6668.60", "129.0.6668.61", "129.0.6668.89", "129.0.6668.90",
+        "130.0.6723.58", "130.0.6723.59", "130.0.6723.116", "130.0.6723.117",
+        "131.0.6778.60", "131.0.6778.61", "131.0.6778.85", "131.0.6778.86",
+        "132.0.6835.60", "132.0.6835.61", "132.0.6835.90", "132.0.6835.91",
+        "133.0.6890.60", "133.0.6890.61", "133.0.6890.86", "133.0.6890.87",
+        "134.0.6945.60", "134.0.6945.61", "134.0.6945.90", "134.0.6945.91",
+        "135.0.7000.60", "135.0.7000.61", "135.0.7000.89", "135.0.7000.90",
+        "136.0.7055.60", "136.0.7055.61", "136.0.7055.90", "136.0.7055.91",
+        "137.0.7109.60", "137.0.7109.61", "137.0.7109.86", "137.0.7109.87",
+        "138.0.7163.60", "138.0.7163.61", "138.0.7163.90", "138.0.7163.91",
+        "139.0.7219.60", "139.0.7219.61", "139.0.7219.86", "139.0.7219.87",
+        "140.0.7278.60", "140.0.7278.61", "140.0.7278.90", "140.0.7278.91"
+    ]
+    
+    windows_versions = [
+        "Windows NT 10.0; Win64; x64",
+        "Windows NT 10.0; WOW64",
+        "Windows NT 10.0; Win64; x64; rv:109.0"
+    ]
+    
+    chrome_version = random.choice(chrome_versions)
+    windows_version = random.choice(windows_versions)
+    
+    # Tạo User-Agent Chrome Windows với độ uy tín cao
+    user_agent = f"Mozilla/5.0 ({windows_version}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{chrome_version} Safari/537.36"
+    
+    # Lưu User-Agent vào context
+    ctx.user_agent = user_agent
+    
+    print(f"✅ Generated Chrome User-Agent: {user_agent}")
     print("✅ Input data parsed and validated successfully")
     ctx.input_parsed = True
 
@@ -89,7 +132,7 @@ def get_petsmart_homepage(ctx):
            .header("Host", "www.petsmart.com")
            .header("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
            .header("Upgrade-Insecure-Requests", "1")
-           .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+           .header("User-Agent", user_agent)
            .header("Accept-Language", "en-US,en;q=0.9")
            .header("Accept-Encoding", "gzip, deflate, br")
            .label("petsmart-homepage")
@@ -145,7 +188,7 @@ def get_hyper_script(ctx):
     r = (http.get(url)
            .header("Accept", "*/*")
            .header("Accept-Encoding", "gzip, deflate, br")
-           .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+           .header("User-Agent", user_agent)
            .header("Accept-Language", "en-US,en;q=0.9")
            .header("Referer", "https://www.petsmart.com/")
            .label("hyper-script")
@@ -218,7 +261,7 @@ def get_client_ip(ctx):
            .header("Sec-Fetch-Site", "none")
            .header("Sec-Fetch-User", "?1")
            .header("Upgrade-Insecure-Requests", "1")
-           .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+           .header("User-Agent", user_agent)
            .label("ipify-api")
            .via_tls()
            .send())
@@ -273,7 +316,7 @@ def generate_sensor_data(ctx):
             return
     
     # Lấy các giá trị cần thiết
-    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+    user_agent = ctx.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
     current_abck_cookie = ctx.get("current_abck_cookie", "")
     bm_sz_cookie = ctx.get("bm_sz_cookie", "")
     script_content = ctx.get("script_content", "")
@@ -365,7 +408,7 @@ def post_sensor_data(ctx):
                .header("Content-Type", "text/plain;charset=UTF-8")
                .header("Origin", "https://www.petsmart.com")
                .header("Accept-Language", "en-US,en;q=0.9")
-               .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+               .header("User-Agent", user_agent)
                .header("Referer", "https://www.petsmart.com/")
                .header("Accept-Encoding", "gzip, deflate, br")
                .json({"sensor_data": sensor_data})
@@ -449,7 +492,7 @@ def check_abck_cookie(ctx):
         return
     
     # Lấy các giá trị cần thiết
-    user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36"
+    user_agent = ctx.get("user_agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
     bm_sz_cookie = cookies.get("bm_sz")
     client_ip = ctx.get("client_ip", "")
     latest_context = ctx.get("sensor_context", "")
@@ -501,7 +544,7 @@ def check_abck_cookie(ctx):
                      .header("Content-Type", "text/plain;charset=UTF-8")
                      .header("Origin", "https://www.petsmart.com")
                      .header("Accept-Language", "en-US,en;q=0.9")
-                     .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+                     .header("User-Agent", user_agent)
                      .header("Referer", "https://www.petsmart.com/")
                      .header("Accept-Encoding", "gzip, deflate, br")
                      .json({"sensor_data": sensor_data_2})
@@ -592,7 +635,7 @@ def check_abck_cookie(ctx):
                             .header("Content-Type", "text/plain;charset=UTF-8")
                             .header("Origin", "https://www.petsmart.com")
                             .header("Accept-Language", "en-US,en;q=0.9")
-                            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+                            .header("User-Agent", user_agent)
                             .header("Referer", "https://www.petsmart.com/")
                             .header("Accept-Encoding", "gzip, deflate, br")
                             .json({"sensor_data": sensor_data_3})
@@ -696,7 +739,7 @@ def call_auth_api(ctx):
                .header("Content-Type", "text/plain;charset=UTF-8")
                .header("Origin", "https://www.petsmart.com")
                .header("Accept-Language", "en-US,en;q=0.9")
-               .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+               .header("User-Agent", user_agent)
                .header("Referer", "https://www.petsmart.com/")
                .header("Accept-Encoding", "gzip, deflate, br")
                .json(auth_payload)
@@ -780,7 +823,7 @@ def get_payments(ctx):
                .header("Content-Type", "text/plain;charset=UTF-8")
                .header("Origin", "https://www.petsmart.com")
                .header("Accept-Language", "en-US,en;q=0.9")
-               .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+               .header("User-Agent", user_agent)
                .header("Referer", "https://www.petsmart.com/")
                .header("Accept-Encoding", "gzip, deflate, br")
                .label("payments-api")
@@ -880,7 +923,7 @@ def get_loyalty_points(ctx):
                .header("Content-Type", "text/plain;charset=UTF-8")
                .header("Origin", "https://www.petsmart.com")
                .header("Accept-Language", "en-US,en;q=0.9")
-               .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36")
+               .header("User-Agent", user_agent)
                .header("Referer", "https://www.petsmart.com/")
                .header("Accept-Encoding", "gzip, deflate, br")
                .header("Authorization", f"Bearer {access_token}")
