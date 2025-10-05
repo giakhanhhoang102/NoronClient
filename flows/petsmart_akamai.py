@@ -79,21 +79,13 @@ def parse_input_data(ctx):
     import random
     
     chrome_versions = [
-        "132.0.6835.61", "132.0.6835.90", "132.0.6835.91",
-        "133.0.6890.60", "133.0.6890.61", "133.0.6890.86", "133.0.6890.87",
-        "134.0.6945.60", "134.0.6945.61", "134.0.6945.90", "134.0.6945.91",
-        "135.0.7000.60", "135.0.7000.61", "135.0.7000.89", "135.0.7000.90",
-        "136.0.7055.60", "136.0.7055.61", "136.0.7055.90", "136.0.7055.91",
-        "137.0.7109.60", "137.0.7109.61", "137.0.7109.86", "137.0.7109.87",
-        "138.0.7163.60", "138.0.7163.61", "138.0.7163.90", "138.0.7163.91",
-        "139.0.7219.60", "139.0.7219.61", "139.0.7219.86", "139.0.7219.87",
-        "140.0.7278.60", "140.0.7278.61", "140.0.7278.90", "140.0.7278.91"
+        "140.0.0.0"
     ]
     
     windows_versions = [
         "Windows NT 10.0; Win64; x64",
-        "Windows NT 10.0; WOW64",
-        "Windows NT 10.0; Win64; x64; rv:109.0"
+        #"Windows NT 10.0; WOW64",
+        #"Windows NT 10.0; Win64; x64; rv:109.0"
     ]
     
     chrome_version = random.choice(chrome_versions)
@@ -991,7 +983,7 @@ def done(ctx):
     """Kết thúc flow và trả về kết quả"""
     return {
         "status": ctx.get("status", "UNKNOWN"),
-        "message": f" G2Check.CC - Getayments: {ctx.get('payments_success', False)}, Total Cards: {len(ctx.get('payment_card_exp', []))}, Loyalty: {ctx.get('loyalty_success', False)}, Dollars: {ctx.get('availableDollars', 'N/A')}"
+        "message": f" G2Check.CC - Getayments: {ctx.get('payments_success', False)}, Total Cards: {len(ctx.get('payment_card_exp', []))}, Loyalty: {ctx.get('loyalty_success', False)}, Dollars: {ctx.get('availableDollars', 'N/A')}, CardExp: {', '.join(ctx.get('payment_card_exp', []))}"
         # "input_parsed": ctx.get("input_parsed", False),
         # "email": ctx.get("email", ""),
         # "password": ctx.get("password", ""),
