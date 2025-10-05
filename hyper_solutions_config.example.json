@@ -1,0 +1,16 @@
+{
+  "hyper_solutions": {
+    "api_key": "your_hyper_solutions_api_key_here",
+    "bypass_sites": [
+      "walmart",
+      "amazon", 
+      "target",
+      "bestbuy",
+      "homedepot"
+    ],
+    "auto_bypass": true,
+    "retry_on_failure": true,
+    "max_retries": 3,
+    "timeout": 30
+  }
+}
