@@ -727,6 +727,11 @@ def create_credit_card_mobile(ctx):
         ctx.status = "FAIL"
         ctx.credit_card_mobile_error = "400.PAYMENT"
         return
+
+    if "ERROR_CARD_EXPIRED" in body_text:
+        ctx.status = "FAIL"
+        ctx.credit_card_mobile_error = "400.PAYMENT"
+        return
     
     # 2) Các trường hợp SUCCESS
     success_patterns = [
