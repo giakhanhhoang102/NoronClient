@@ -978,12 +978,35 @@ def get_loyalty_points(ctx):
         ctx.loyalty_response = ""
         ctx.loyalty_success = False
 
+
+@step("dump_cookies_header")
+def dump_cookies_header(ctx):
+    """Step 13: Dump toàn bộ cookies của phiên sang định dạng header string"""
+    # Lấy tất cả cookies từ CookieManager
+    cookies = ctx.session.get("cookies", {}) or {}
+    
+    # Chuyển sang header string: key1=value1; key2=value2
+    if isinstance(cookies, dict):
+        parts = []
+        for k, v in cookies.items():
+            if v is None:
+                continue
+            # Đảm bảo giá trị là string
+            parts.append(f"{k}={str(v)}")
+        cookies_header = "; ".join(parts)
+    else:
+        # Phòng trường hợp cấu trúc không như mong đợi
+        cookies_header = ""
+    
+    # Lưu vào context để finalize sử dụng
+    ctx.cookies_header = cookies_header
+
 @finalize
 def done(ctx):
     """Kết thúc flow và trả về kết quả"""
     return {
         "status": ctx.get("status", "UNKNOWN"),
-        "message": f" G2Check.CC - Getayments: {ctx.get('payments_success', False)}, Total Cards: {len(ctx.get('payment_card_exp', []))}, Loyalty: {ctx.get('loyalty_success', False)}, Dollars: {ctx.get('availableDollars', 'N/A')}, CardExp: {', '.join(ctx.get('payment_card_exp', []))}"
+        "message": f" G2Check.CC - Getayments: {ctx.get('payments_success', False)}, Total Cards: {len(ctx.get('payment_card_exp', []))}, Loyalty: {ctx.get('loyalty_success', False)}, Dollars: {ctx.get('availableDollars', 'N/A')}, CardExp: {', '.join(ctx.get('payment_card_exp', []))}, Cookies: {ctx.get('cookies_header', '')}"
         # "input_parsed": ctx.get("input_parsed", False),
         # "email": ctx.get("email", ""),
         # "password": ctx.get("password", ""),
